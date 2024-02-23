@@ -3,7 +3,8 @@ import { ApiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-
+import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 
 const registerUser = asyncHandler( async(req,res) =>{
@@ -87,12 +88,18 @@ const registerUser = asyncHandler( async(req,res) =>{
 
 const generateAccessandRefereshTokens = async(userId) =>{
     try {
-        
-      const user = await User.findById(userId)
-      
-      const accessToken = await user.generateAccessToken()
-      const refreshToken = await user.generateRefreshToken()
+        console.log("yha pahuch gya ma");
 
+      const user = await User.findById(userId)
+
+      console.log("yha pahuch gya ma_23");
+
+      
+      const accessToken =  user.generateAccessToken()
+    //   console.log("yha p hi h error");
+
+      const refreshToken =  user.generateRefreshToken()
+    // console.log("yha pahuch gya ma");
       user.refreshToken = refreshToken;
       
       await user.save( { validateBeforeSave: false })
@@ -100,7 +107,7 @@ const generateAccessandRefereshTokens = async(userId) =>{
 
 
     } catch (error) {
-        throw new ApiError(500,"Tokens are not generated")
+        throw new ApiError(500,"Tokens are not generated something went wrong")
     }
 }
 
@@ -132,10 +139,11 @@ const loginUser = asyncHandler(async(req,res)=>{
       if(!isPasswordValid){
         throw new ApiError(401,"Invalid user credentials")
     }
-
-    const {accessToken,refreshToken} = await generateAccessandRefereshTokens(user._id);
-
-    const loggedInuser =  await user.findById(user._id).select(" -password - refreshToken")
+     
+    console.log("Pehle yha")
+    const {accessToken,refreshToken} = await generateAccessandRefereshTokens(user._id)
+    console.log("generate hogye");
+    const loggedInuser =  await User.findById(user._id).select(" -password -refreshToken")
 
     // for stopping cookies change from frontend
 
@@ -151,10 +159,11 @@ const loginUser = asyncHandler(async(req,res)=>{
         new ApiResponse(
             200,
             {
-                loggedInuser,accessToken,refreshToken
-            }
+               user: loggedInuser,accessToken,refreshToken
+            },
+            "user loggedIn successfully"
         ),
-        "user loggedIn successfully"
+       
     )
 
   })

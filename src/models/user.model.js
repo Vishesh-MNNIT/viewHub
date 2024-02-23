@@ -1,6 +1,6 @@
-import mongoose ,{Schema} from "mongoose"
+import mongoose, {Schema} from "mongoose";
 import jwt from "jsonwebtoken"
-import brcypt from "bcrypt"
+import bcrypt from "bcrypt"
 
 
 const userSchema = new Schema({
@@ -56,15 +56,16 @@ userSchema.pre("save",async function(next){
     
     if(!this.isModified("password")) return next()
 
-    this.password = await brcypt.hash(this.password,10)
+    this.password = await bcrypt.hash(this.password,10)
     next()
 })
 
 userSchema.methods.isPasswordCorrect = async function(password){
-    return await brcypt.compare(password,this.password);
+    return await bcrypt.compare(password,this.password);
 }
 
 userSchema.methods.generateAccessToken = function(){
+    console.log("Models m bhi aagya");
     return jwt.sign(
         {
             _id: this._id,
@@ -74,9 +75,11 @@ userSchema.methods.generateAccessToken = function(){
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn:ACCESS_TOKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
+        
     )
+    
 }
 
 userSchema.methods.generateRefreshToken = function(){
@@ -86,7 +89,7 @@ userSchema.methods.generateRefreshToken = function(){
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn:REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }
