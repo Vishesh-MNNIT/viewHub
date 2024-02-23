@@ -54,7 +54,7 @@ const userSchema = new Schema({
 
 userSchema.pre("save",async function(next){
     
-    if(!this.idModified("password")) return next()
+    if(!this.isModified("password")) return next()
 
     this.password = await brcypt.hash(this.password,10)
     next()
